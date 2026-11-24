@@ -6,47 +6,240 @@ import pygame
 # CONFIGURAÇÕES DA NAVE
 # ==================================
 
-PLAYER_WIDTH = 80
-PLAYER_HEIGHT = 61
-PLAYER_SCALE = 0.8
-
+PLAYER_SPRITE_WIDTH = 80
 PLAYER_SPEED = 400
 
-PLAYER_COLOR = (0, 180, 230)
-PLAYER_COCKPIT_COLOR = (100, 240, 255)
-PLAYER_OUTLINE_COLOR = (0, 230, 255)
-PLAYER_WING_COLOR = (15, 65, 120)
-PLAYER_WING_DETAIL = (0, 160, 220)
 
-PLAYER_ENGINE_COLOR = (255, 105, 0)
-PLAYER_ENGINE_GLOW = (255, 190, 60)
-PLAYER_FLAME_CORE = (255, 245, 190)
-PLAYER_FLAME_TIMER = 0
-PLAYER_FLAME_SPEED = 12
+# ==================================
+# CARREGAR IMAGEM DA NAVE
+# ==================================
+
+
+def load_player_sprite():
+
+	sprite_sheet = pygame.image.load(
+		"assets/images/defender_sheet.png"
+	).convert_alpha()
+
+	# Recortar a terceira nave da primeira fila
+	player_sprite = sprite_sheet.subsurface(
+		(652, 38, 281, 337)
+	).copy()
+
+	original_width, original_height = player_sprite.get_size()
+
+	new_height = int(
+		original_height * PLAYER_SPRITE_WIDTH / original_width
+	)
+
+	player_sprite = pygame.transform.smoothscale(
+		player_sprite,
+		(PLAYER_SPRITE_WIDTH, new_height)
+	)
+
+	return player_sprite
+
 
 
 # ==================================
-# CRIAÇÃO DA NAVE
+# CRIAR CAMADA DIANTEIRA DOS MOTORES
 # ==================================
 
-def create_player(width, height):
+def create_player_front(player_sprite):
+
+    front_layer = pygame.Surface(
+        player_sprite.get_size(),
+        pygame.SRCALPHA
+    )
+
+    # Recortar a parte inferior do motor esquerdo
+    left_engine = player_sprite.subsurface(
+        (22, 64, 17, 10)
+    )
+
+    # Recortar a parte inferior do motor direito
+    right_engine = player_sprite.subsurface(
+        (45, 64, 17, 10)
+    )
+
+    # Colocar os recortes na camada transparente
+    front_layer.blit(left_engine, (22, 64))
+    front_layer.blit(right_engine, (45, 64))
+
+    return front_layer
+
+
+# ==================================
+# DESENHAR CAMADA DIANTEIRA
+# ==================================
+
+def draw_player_front(screen, player, front_layer):
+
+	front_rect = front_layer.get_rect(
+		center=(
+			int(player["x"]),
+			int(player["y"])
+		)
+	)
+
+	screen.blit(front_layer, front_rect)
+
+# ==================================
+# CARREGAR FOTOGRAMAS DAS CHAMAS
+# ==================================
+
+
+def load_flame_sprites():
+
+	sprite_sheet = pygame.image.load(
+		"assets/images/defender_sheet.png"
+	).convert_alpha()
+
+	flame_frames = []
+
+	frame_positions = [
+		(397, 390, 51, 290),
+		(498, 390, 69, 290),
+		(609, 390, 64, 290),
+		(717, 390, 67, 290)
+	]
+
+	index = 0
+	max_height = 0
+
+	while index < len(frame_positions):
+
+		x, y, width, height = frame_positions[index]
+
+		frame = sprite_sheet.subsurface(
+			(x, y, width, height)
+		).copy()
+
+		flame_rect = frame.get_bounding_rect()
+		frame = frame.subsurface(flame_rect).copy()
+
+		original_width, original_height = frame.get_size()
+
+		new_width = 18
+		new_height = int(
+			original_height * new_width / original_width
+		)
+
+		frame = pygame.transform.smoothscale(
+			frame,
+			(new_width, new_height)
+		)
+
+		flame_frames.append(frame)
+
+		if new_height > max_height:
+			max_height = new_height
+
+		index += 1
+
+	# Uniformizar a área de todos os frames
+	index = 0
+	aligned_frames = []
+
+	while index < len(flame_frames):
+
+		aligned_frame = pygame.Surface(
+			(18, max_height),
+			pygame.SRCALPHA
+		)
+
+		aligned_frame.blit(
+			flame_frames[index],
+			(0, 0)
+		)
+
+		aligned_frames.append(aligned_frame)
+
+		index += 1
+
+	return aligned_frames
+
+
+# ==================================
+# ATUALIZAR ANIMACAO DAS CHAMAS
+# ==================================
+
+def update_player_animation(player, dt):
+
+	player["flame_timer"] += dt
+
+	if player["flame_timer"] >= 0.10:
+
+		player["flame_timer"] = 0
+
+		player["flame_frame"] += 1
+
+		if player["flame_frame"] >= 4:
+			player["flame_frame"] = 0
+
+
+# ==================================
+# DESENHAR CHAMAS
+# ==================================
+
+
+def draw_player_flames(screen, player, flame_frames):
+
+	frame = flame_frames[player["flame_frame"]]
+
+	engine_offset = 11
+
+	# Posição fixa onde as chamas começam
+	flame_top = (
+		player["y"]
+		+ player["height"] / 2
+		- 55
+	)
+
+	# Motor esquerdo
+	left_rect = frame.get_rect(
+		midtop=(
+			int(player["x"] - engine_offset),
+			int(flame_top)
+		)
+	)
+
+	screen.blit(frame, left_rect)
+
+	# Motor direito
+	right_rect = frame.get_rect(
+		midtop=(
+			int(player["x"] + engine_offset),
+			int(flame_top)
+		)
+	)
+
+	screen.blit(frame, right_rect)
+
+
+# ==================================
+# CRIAR JOGADOR
+# ==================================
+
+def create_player(width, height, player_sprite):
+
+	sprite_width, sprite_height = player_sprite.get_size()
 
 	player = {
 		"x": width / 2,
-		"y": height - 100,
-		"width": PLAYER_WIDTH,
-		"height": PLAYER_HEIGHT,
+		"y": height - 70 - sprite_height / 2,
+		"width": sprite_width,
+		"height": sprite_height,
 		"speed": PLAYER_SPEED,
-		"flame_timer": 0,
-		"moving_left": False,
-		"moving_right": False
+		"flame_frame": 0,
+		"flame_timer": 0
 	}
 
 	return player
 
 
 # ==================================
-# MOVIMENTO DA NAVE
+# MOVIMENTAR JOGADOR
 # ==================================
 
 def move_player(player, keys, dt, screen_width, screen_height, margin):
@@ -65,8 +258,9 @@ def move_player(player, keys, dt, screen_width, screen_height, margin):
 
 	minimum_x = margin + player["width"] / 2
 	maximum_x = screen_width - margin - player["width"] / 2
+
 	minimum_y = 40 + player["height"] / 2
-	maximum_y = screen_height - player["height"] - 40
+	maximum_y = screen_height - 40 - player["height"] / 2
 
 	if player["x"] < minimum_x:
 		player["x"] = minimum_x
@@ -80,166 +274,18 @@ def move_player(player, keys, dt, screen_width, screen_height, margin):
 	if player["y"] > maximum_y:
 		player["y"] = maximum_y
 
-# ==================================
-# ANIMACAO PLAYER
-# ==================================
-def update_player_animation(player, keys, dt):
-
-	player["flame_timer"] += dt * PLAYER_FLAME_SPEED
-
-	if player["flame_timer"] >= 2:
-		player["flame_timer"] = 0
-
-	player["moving_left"] = keys[pygame.K_LEFT]
-	player["moving_right"] = keys[pygame.K_RIGHT]
-
-	player["left_flame_length"] = 14
-	player["right_flame_length"] = 14
-
-	if player["moving_left"]:
-		player["left_flame_length"] = 8
-		player["right_flame_length"] = 22
-
-	if player["moving_right"]:
-		player["left_flame_length"] = 22
-		player["right_flame_length"] = 8
-
-def scale_point(x, y, scale):
-	return (int(x * scale), int(y * scale))
 
 # ==================================
-# DESENHO DA NAVE
+# DESENHAR JOGADOR
 # ==================================
 
-def draw_player(screen, player):
+def draw_player(screen, player, player_sprite):
 
-	x = int(player["x"])
-	y = int(player["y"])
-	scale = PLAYER_SCALE
-
-	# Fuselagem central
-	body_points = [
-		(x, y),
-		(x + int(12 * scale), y + int(24 * scale)),
-		(x + int(12 * scale), y + int(62 * scale)),
-		(x, y + int(70 * scale)),
-		(x - int(12 * scale), y + int(62 * scale)),
-		(x - int(12 * scale), y + int(24 * scale))
-]
-
-	# Cockpit luminoso
-	cockpit_points = [
-		(x, y + int(12 * scale)),
-		(x + int(6 * scale), y + int(27 * scale)),
-		(x, y + int(42 * scale)),
-		(x - int(6 * scale), y + int(27 * scale))
-	]
-
-	# Motor esquerdo
-	left_engine = [
-		(x - int(18 * scale), y + int(48 * scale)),
-		(x - int(30 * scale), y + int(58 * scale)),
-		(x - int(27 * scale), y + int(70 * scale)),
-		(x - int(15 * scale), y + int(65 * scale))
-	]
-
-	# Motor direito
-	right_engine = [
-		(x + int(18 * scale), y + int(48 * scale)),
-		(x + int(30 * scale), y + int(58 * scale)),
-		(x + int(27 * scale), y + int(70 * scale)),
-		(x + int(15 * scale), y + int(65 * scale))
-	]
-
-	# Chama do motor esquerdo
-	left_flame = [
-		(x - int(18 * scale), y + int(68 * scale)),
-		(x - int(24 * scale), y + int((68 + player["left_flame_length"]) * scale)),
-		(x - int(18 * scale), y + int(78 * scale)),
-		(x - int(12 * scale), y + int((68 + player["left_flame_length"]) * scale)),
-		(x - int(15 * scale), y + int(68 * scale))
-	]
-
-	# Chama do motor direito
-	right_flame = [
-		(x + int(18 * scale), y + int(68 * scale)),
-		(x + int(24 * scale), y + int((68 + player["right_flame_length"]) * scale)),
-		(x + int(18 * scale), y + int(78 * scale)),
-		(x + int(12 * scale), y + int((68 + player["right_flame_length"]) * scale)),
-		(x + int(15 * scale), y + int(68 * scale))
-	]
-
-	# Asa esquerda
-	left_wing = [
-		(x - int(14 * scale), y + int(28 * scale)),
-		(x - int(58 * scale), y + int(62 * scale)),
-		(x - int(48 * scale), y + int(68 * scale)),
-		(x - int(18 * scale), y + int(58 * scale)),
-		(x - int(12 * scale), y + int(44 * scale))
-	]
-
-	# Asa direita
-	right_wing = [
-		(x + int(14 * scale), y + int(28 * scale)),
-		(x + int(58 * scale), y + int(62 * scale)),
-		(x + int(48 * scale), y + int(68 * scale)),
-		(x + int(18 * scale), y + int(58 * scale)),
-		(x + int(12 * scale), y + int(44 * scale))
-	]
-
-	# Chamas exteriores
-	pygame.draw.polygon(screen, PLAYER_ENGINE_COLOR, left_flame)
-	pygame.draw.polygon(screen, PLAYER_ENGINE_COLOR, right_flame)
-
-	# Desenhar motor esquerdo
-	pygame.draw.polygon(screen, PLAYER_WING_COLOR, left_engine)
-	pygame.draw.polygon(screen, PLAYER_WING_DETAIL, left_engine, 2)
-
-	# Desenhar motor direito
-	pygame.draw.polygon(screen, PLAYER_WING_COLOR, right_engine)
-	pygame.draw.polygon(screen, PLAYER_WING_DETAIL, right_engine, 2)
-
-	# Desenhar asa esquerda
-	pygame.draw.polygon(
-		screen,
-		PLAYER_WING_COLOR,
-		left_wing
-	)
-	pygame.draw.polygon(
-		screen,
-		PLAYER_WING_DETAIL,
-		left_wing,
-		2
+	sprite_rect = player_sprite.get_rect(
+		center=(
+			int(player["x"]),
+			int(player["y"])
+		)
 	)
 
-	# Desenhar asa direita
-	pygame.draw.polygon(
-		screen,
-		PLAYER_WING_COLOR,
-		right_wing
-	)
-	pygame.draw.polygon(
-		screen,
-		PLAYER_WING_DETAIL,
-		right_wing,
-		2
-	)
-
-	# Corpo principal
-	pygame.draw.polygon(
-		screen,
-		PLAYER_COLOR,
-		body_points
-	)
-
-	# Contorno luminoso
-	pygame.draw.polygon(
-		screen,
-		PLAYER_OUTLINE_COLOR,
-		body_points,
-		1
-	)
-
-	# Desenhar cockpit por cima da fuselagem
-	pygame.draw.polygon(screen, PLAYER_COCKPIT_COLOR, cockpit_points)
-	pygame.draw.polygon(screen, PLAYER_OUTLINE_COLOR, cockpit_points, 1)
+	screen.blit(player_sprite, sprite_rect)
