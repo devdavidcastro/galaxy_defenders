@@ -10,10 +10,13 @@ from src.player.player import (
 	load_flame_sprites,
 	update_player_animation,
 	draw_player_flames,
-	create_player_front,
-	draw_player_front
 	)
 
+from src.projectiles.projectile import (
+	create_projectile,
+	move_projectile,
+	draw_projectile
+)
 
 # ==================================
 # INICIALIZACAO DO PYGAME
@@ -70,7 +73,9 @@ player = create_player(
 	HEIGHT,
 	player_sprite
 	)
-
+projectiles = []
+shoot_timer = 0
+SHOOT_INTERVAL = 0.35
 
 # ==================================
 # CRIAR ESTRELAS
@@ -138,6 +143,24 @@ while running:
 	# Calcular o tempo decorrido
 	dt = clock.tick(FPS) / 1000
 
+	# Temporizador dos disparos
+	shoot_timer += dt
+
+	if shoot_timer >= SHOOT_INTERVAL:
+		projectile = create_projectile(player)
+		projectiles.append(projectile)
+		shoot_timer = 0
+
+	# Movimentar e remover projéteis
+	index = 0
+
+	while index < len(projectiles):
+		move_projectile(projectiles[index], dt)
+		if projectiles[index]["y"] + projectiles[index]["height"] / 2 < 0:
+			projectiles.pop(index)
+		else:
+			index += 1
+
 	# Processar eventos
 	events = pygame.event.get()
 	event_index = 0
@@ -189,6 +212,12 @@ while running:
 			star["size"]
 		)
 
+		index += 1
+
+	# Desenhar projetil
+	index = 0
+	while index < len(projectiles):
+		draw_projectile(game_surface, projectiles[index])
 		index += 1
 
 	# Desenhar chamas
