@@ -5,8 +5,8 @@ import random
 # CONFIGURACAO DOS INIMIGOS
 # ==================================
 
-ENEMY_WIDTH = 48
-ENEMY_HEIGHT = 48
+ENEMY_WIDTH = 35
+ENEMY_HEIGHT = 35
 
 ENEMY_SPEED_X = 120
 ENEMY_SPEED_Y = 80
@@ -68,17 +68,12 @@ def draw_enemy(screen, enemy):
 
 def check_projectile_collision(enemy, projectile):
 
-	enemy_rect = pygame.Rect(
-		0,
-		0,
-		enemy["width"],
-		enemy["height"]
-	)
+	# Ignorar inimigos que ainda estao fora do ecra
+	if enemy["y"] + enemy["height"] / 2 < 0:
+		return False
 
-	enemy_rect.center = (
-		int(enemy["x"]),
-		int(enemy["y"])
-	)
+	enemy_rect = pygame.Rect(0, 0, enemy["width"], enemy["height"])
+	enemy_rect.center = (int(enemy["x"]), int(enemy["y"]))
 
 	projectile_rect = pygame.Rect(
 		0,
