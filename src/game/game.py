@@ -46,7 +46,10 @@ from src.enemies.enemy import (
 	create_enemy,
 	move_enemy,
 	draw_enemy,
-	check_projectile_collision
+	check_projectile_collision,
+	load_enemy_sprite_sheet,
+	update_enemy_animation,
+	get_unlocked_enemy_types
 )
 
 
@@ -97,6 +100,8 @@ def run_game():
 	# CONFIGURACAO DOS INIMIGOS
 	# ==================================
 
+	enemy_frames = load_enemy_sprite_sheet()
+
 	enemies = []
 
 	ENEMY_LIMIT = 5
@@ -110,6 +115,7 @@ def run_game():
 		ENEMY_MIN_SPAWN_INTERVAL,
 		ENEMY_MAX_SPAWN_INTERVAL
 	)
+
 
 	# ==================================
 	# CRIAR ESTRELAS
@@ -211,7 +217,11 @@ def run_game():
 
 			if len(enemies) < ENEMY_LIMIT:
 
-				enemy = create_enemy(WIDTH)
+				unlocked_enemies = get_unlocked_enemy_types(score)
+
+				enemy_type = random.choice(unlocked_enemies)
+
+				enemy = create_enemy(WIDTH, enemy_type)
 
 				enemy["x"] = random.randint(80, WIDTH - 80)
 				enemy["y"] = -enemy["height"] / 2
@@ -225,17 +235,23 @@ def run_game():
 				ENEMY_MAX_SPAWN_INTERVAL
 			)
 
+
 		# ----------------------------------
-		# MOVIMENTAR INIMIGOS
+		# MOVIMENTAR E ANIMAR INIMIGOS
 		# ----------------------------------
 
 		index = 0
-
 		while index < len(enemies):
 
-			move_enemy(enemies[index], dt, WIDTH)
+			enemy = enemies[index]
+			move_enemy(enemy, dt, WIDTH)
+			update_enemy_animation(enemy, dt)
 
-			index += 1
+			if enemy["is_destroyed"]:
+				enemies.pop(index)
+			else:
+				index += 1
+
 
 		# ----------------------------------
 		# VERIFICAR COLISOES
@@ -250,23 +266,35 @@ def run_game():
 
 			while enemy_index < len(enemies):
 
-				if check_projectile_collision(
-					enemies[enemy_index],
-					projectiles[projectile_index]
-				):
+				enemy = enemies[enemy_index]
 
-					enemies.pop(enemy_index)
-					projectiles.pop(projectile_index)
+				# Ignorar inimigos que ja foram atingidos
+				if not enemy["is_hit"]:
 
-					score = add_score(score, 10)
+					if check_projectile_collision(
+						enemy,
+						projectiles[projectile_index]
+					):
 
-					collision_detected = True
-					break
+						# Iniciar animacao de destruicao
+						enemy["is_hit"] = True
+						enemy["frame"] = 1
+						enemy["animation_timer"] = 0
+
+						# Remover o projetil
+						projectiles.pop(projectile_index)
+
+						# Acrescentar pontos apenas uma vez
+						score = add_score(score, 10)
+
+						collision_detected = True
+						break
 
 				enemy_index += 1
 
 			if not collision_detected:
 				projectile_index += 1
+
 
 		# ----------------------------------
 		# ATUALIZAR ANIMACAO DO JOGADOR
@@ -321,7 +349,8 @@ def run_game():
 
 			draw_enemy(
 				game_surface,
-				enemies[index]
+				enemies[index],
+				enemy_frames
 			)
 
 			index += 1
