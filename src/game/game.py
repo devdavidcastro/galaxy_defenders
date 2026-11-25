@@ -1,6 +1,8 @@
 import pygame
 import random
 
+from pygame._sdl2 import Window
+
 from src.game.settings import (
 	WIDTH,
 	HEIGHT,
@@ -58,6 +60,10 @@ def run_game():
 		(WIDTH, HEIGHT),
 		pygame.RESIZABLE
 	)
+
+	pygame.display.set_caption(WINDOW_TITLE)
+	window = Window.from_display_module()
+	window.maximize()
 
 	game_surface = pygame.Surface((WIDTH, HEIGHT))
 
