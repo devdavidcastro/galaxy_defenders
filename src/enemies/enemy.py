@@ -35,6 +35,7 @@ def create_enemy(screen_width, enemy_type="drone"):
 		"speed_x": config["speed_x"],
 		"speed_y": config["speed_y"],
 		"direction": random.choice([-1, 1]),
+		"vertical_direction": 1,
 		"can_shoot": config["can_shoot"],
 		"shoot_interval": config["shoot_interval"],
 		"shoot_timer": 0,
@@ -47,7 +48,7 @@ def create_enemy(screen_width, enemy_type="drone"):
 	return enemy
 
 
-def move_enemy(enemy, dt, screen_width):
+def move_enemy(enemy, dt, screen_width, screen_height):
 
 	if enemy["is_hit"]:
 		return
@@ -56,7 +57,7 @@ def move_enemy(enemy, dt, screen_width):
 	enemy["x"] += enemy["speed_x"] * enemy["direction"] * dt
 
 	# Movimento vertical
-	enemy["y"] += enemy["speed_y"] * dt
+	enemy["y"] += enemy["speed_y"] * enemy["vertical_direction"] * dt
 
 	# Verificar a margem direita
 	if enemy["x"] + enemy["width"] / 2 >= screen_width - 40:
@@ -66,11 +67,20 @@ def move_enemy(enemy, dt, screen_width):
 	if enemy["x"] - enemy["width"] / 2 <= 40:
 		enemy["direction"] = 1
 
+	# Verificar o limite inferior
+	if enemy["y"] + enemy["height"] / 2 >= screen_height - 40:
+		enemy["vertical_direction"] = -1
+
+	# Verificar o limite superior
+	if enemy["y"] - enemy["height"] / 2 <= 40:
+		enemy["vertical_direction"] = 1
+
 
 
 def draw_enemy(screen, enemy, enemy_frames):
 
-	enemy_sprite = enemy_frames[enemy["frame"]]
+	enemy_type = enemy["type"]
+	enemy_sprite = enemy_frames[enemy_type][enemy["frame"]]
 	enemy_rect = enemy_sprite.get_rect()
 	enemy_rect.center = (
 		enemy["x"],
@@ -78,7 +88,6 @@ def draw_enemy(screen, enemy, enemy_frames):
 	)
 
 	screen.blit(enemy_sprite, enemy_rect)
-
 
 
 def check_projectile_collision(enemy, projectile):
@@ -105,32 +114,42 @@ def check_projectile_collision(enemy, projectile):
 	return enemy_rect.colliderect(projectile_rect)
 
 
-def load_enemy_sprite_sheet():
+def load_enemy_sprite_sheet(enemy_type):
+
+	enemy_numbers = {
+		"drone": 1,
+		"escaravelho": 2,
+		"nave_pesada": 3,
+		"orbital": 4,
+		"criatura": 5,
+		"batedor": 6
+	}
+
+	sprite_number = enemy_numbers[enemy_type]
+
+	sprite_sheet_path = (
+		f"assets/images/inimigo{sprite_number}_hit_spritesheet.png"
+	)
 
 	sprite_sheet = pygame.image.load(
-		"assets/images/inimigo1_hit_spritesheet.png"
+		sprite_sheet_path
 	).convert_alpha()
 
 	frames = []
-
-	frame_width = 128
-	frame_height = 128
 
 	frame_index = 0
 
 	while frame_index < 5:
 
 		frame = pygame.Surface(
-			(frame_width, frame_height),
+			(128, 128),
 			pygame.SRCALPHA
 		)
-
-		frame_x = frame_index * frame_width
 
 		frame.blit(
 			sprite_sheet,
 			(0, 0),
-			(frame_x, 0, frame_width, frame_height)
+			(frame_index * 128, 0, 128, 128)
 		)
 
 		frame = pygame.transform.scale(
@@ -168,16 +187,16 @@ def update_enemy_animation(enemy, dt):
 
 def get_unlocked_enemy_types(score):
 
-	if score < 100:
+	if score < 200:
 		return ["drone"]
 
-	elif score < 200:
+	elif score < 400:
 		return ["drone", "escaravelho"]
 
-	elif score < 300:
+	elif score < 800:
 		return ["drone", "escaravelho", "nave_pesada"]
 
-	elif score < 400:
+	elif score < 1000:
 		return ["drone", "escaravelho", "nave_pesada", "orbital"]
 
 	else:
@@ -189,3 +208,82 @@ def get_unlocked_enemy_types(score):
 			"criatura",
 			"batedor"
 		]
+
+def get_enemy_limit(score):
+
+	if score < 100:
+		return 10
+
+	elif score < 200:
+		return 12
+
+	elif score < 300:
+		return 14
+
+	elif score < 400:
+		return 16
+
+	elif score < 500:
+		return 18
+
+	elif score < 600:
+		return 20
+
+	elif score < 700:
+		return 23
+
+	elif score < 800:
+		return 26
+
+	elif score < 900:
+		return 29
+
+	elif score < 1000:
+		return 32
+
+	elif score < 1200:
+		return 35
+
+	elif score < 1500:
+		return 38
+
+	elif score < 1800:
+		return 42
+
+	elif score < 2000:
+		return 46
+
+	else:
+		return 50
+
+def get_enemy_spawn_interval(score):
+
+	if score < 100:
+		return 0.8, 1.8
+
+	elif score < 200:
+		return 0.7, 1.5
+
+	elif score < 300:
+		return 0.6, 1.3
+
+	elif score < 400:
+		return 0.5, 1.1
+
+	elif score < 500:
+		return 0.4, 0.9
+
+	elif score < 600:
+		return 0.35, 0.8
+
+	elif score < 700:
+		return 0.3, 0.7
+
+	elif score < 800:
+		return 0.25, 0.6
+
+	elif score < 900:
+		return 0.2, 0.5
+
+	else:
+		return 0.15, 0.4

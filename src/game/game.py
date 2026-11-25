@@ -49,7 +49,9 @@ from src.enemies.enemy import (
 	check_projectile_collision,
 	load_enemy_sprite_sheet,
 	update_enemy_animation,
-	get_unlocked_enemy_types
+	get_unlocked_enemy_types,
+	get_enemy_spawn_interval,
+	get_enemy_limit
 )
 
 
@@ -97,33 +99,6 @@ def run_game():
 	SHOOT_INTERVAL = 0.35
 
 	# ==================================
-	# CONFIGURACAO DOS INIMIGOS
-	# ==================================
-
-	enemy_frames = load_enemy_sprite_sheet()
-
-	enemies = []
-
-	ENEMY_LIMIT = 5
-
-	ENEMY_MIN_SPAWN_INTERVAL = 1.0
-	ENEMY_MAX_SPAWN_INTERVAL = 3.5
-
-	enemy_spawn_timer = 0
-
-	enemy_spawn_interval = random.uniform(
-		ENEMY_MIN_SPAWN_INTERVAL,
-		ENEMY_MAX_SPAWN_INTERVAL
-	)
-
-
-	# ==================================
-	# CRIAR ESTRELAS
-	# ==================================
-
-	stars = create_stars()
-
-	# ==================================
 	# CRIAR PONTUACAO
 	# ==================================
 
@@ -133,6 +108,35 @@ def run_game():
 		"assets/fonts/Oxanium.ttf",
 		30
 	)
+
+	# ==================================
+	# CONFIGURACAO DOS INIMIGOS
+	# ==================================
+
+	enemy_frames = {
+		"drone": load_enemy_sprite_sheet("drone"),
+		"escaravelho": load_enemy_sprite_sheet("escaravelho"),
+		"nave_pesada": load_enemy_sprite_sheet("nave_pesada"),
+		"orbital": load_enemy_sprite_sheet("orbital"),
+		"criatura": load_enemy_sprite_sheet("criatura"),
+		"batedor": load_enemy_sprite_sheet("batedor")
+	}
+
+	enemies = []
+
+	enemy_spawn_timer = 0
+	min_interval, max_interval = get_enemy_spawn_interval(score)
+	enemy_spawn_interval = random.uniform(
+		min_interval,
+		max_interval
+	)
+
+
+	# ==================================
+	# CRIAR ESTRELAS
+	# ==================================
+
+	stars = create_stars()
 
 	# ==================================
 	# GAME LOOP
@@ -215,7 +219,7 @@ def run_game():
 
 		if enemy_spawn_timer >= enemy_spawn_interval:
 
-			if len(enemies) < ENEMY_LIMIT:
+			if len(enemies) < get_enemy_limit(score):
 
 				unlocked_enemies = get_unlocked_enemy_types(score)
 
@@ -230,9 +234,11 @@ def run_game():
 
 			enemy_spawn_timer = 0
 
+			min_interval, max_interval = get_enemy_spawn_interval(score)
+
 			enemy_spawn_interval = random.uniform(
-				ENEMY_MIN_SPAWN_INTERVAL,
-				ENEMY_MAX_SPAWN_INTERVAL
+				min_interval,
+				max_interval
 			)
 
 
@@ -244,7 +250,7 @@ def run_game():
 		while index < len(enemies):
 
 			enemy = enemies[index]
-			move_enemy(enemy, dt, WIDTH)
+			move_enemy(enemy, dt, WIDTH, HEIGHT)
 			update_enemy_animation(enemy, dt)
 
 			if enemy["is_destroyed"]:
