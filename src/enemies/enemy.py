@@ -42,7 +42,8 @@ def create_enemy(screen_width, enemy_type="drone"):
 		"frame": 0,
 		"animation_timer": 0,
 		"is_hit": False,
-		"is_destroyed": False
+		"is_destroyed": False,
+		"health": config["health"]
 	}
 
 	return enemy
@@ -187,16 +188,16 @@ def update_enemy_animation(enemy, dt):
 
 def get_unlocked_enemy_types(score):
 
-	if score < 200:
+	if score < 100:
 		return ["drone"]
 
-	elif score < 400:
+	elif score < 200:
 		return ["drone", "escaravelho"]
 
-	elif score < 800:
+	elif score < 700:
 		return ["drone", "escaravelho", "nave_pesada"]
 
-	elif score < 1000:
+	elif score < 900:
 		return ["drone", "escaravelho", "nave_pesada", "orbital"]
 
 	else:

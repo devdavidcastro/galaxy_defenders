@@ -12,7 +12,8 @@ ENEMY_TYPES = {
 		"speed_x": 120,
 		"speed_y": 80,
 		"can_shoot": False,
-		"shoot_interval": 0
+		"shoot_interval": 0,
+		"health": 1,
 	},
 
 	"escaravelho": {
@@ -22,7 +23,8 @@ ENEMY_TYPES = {
 		"speed_x": 120,
 		"speed_y": 80,
 		"can_shoot": False,
-		"shoot_interval": 0
+		"shoot_interval": 0,
+		"health": 2,
 	},
 
 	"nave_pesada": {
@@ -32,7 +34,8 @@ ENEMY_TYPES = {
 		"speed_x": 100,
 		"speed_y": 60,
 		"can_shoot": True,
-		"shoot_interval": 2.5
+		"shoot_interval": 2.5,
+		"health": 3,
 	},
 
 	"orbital": {
@@ -42,7 +45,8 @@ ENEMY_TYPES = {
 		"speed_x": 180,
 		"speed_y": 140,
 		"can_shoot": False,
-		"shoot_interval": 0
+		"shoot_interval": 0,
+		"health": 1,
 	},
 
 	"criatura": {
@@ -52,7 +56,8 @@ ENEMY_TYPES = {
 		"speed_x": 140,
 		"speed_y": 100,
 		"can_shoot": False,
-		"shoot_interval": 0
+		"shoot_interval": 0,
+		"health": 2,
 	},
 
 	"batedor": {
@@ -62,6 +67,7 @@ ENEMY_TYPES = {
 		"speed_x": 200,
 		"speed_y": 160,
 		"can_shoot": True,
-		"shoot_interval": 1.5
+		"shoot_interval": 1.5,
+		"health": 2,
 	}
 }

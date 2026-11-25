@@ -274,24 +274,29 @@ def run_game():
 
 				enemy = enemies[enemy_index]
 
-				# Ignorar inimigos que ja foram atingidos
-				if not enemy["is_hit"]:
+				# Ignorar inimigos que ja foram destruidos
+				if not enemy["is_destroyed"]:
 
 					if check_projectile_collision(
 						enemy,
 						projectiles[projectile_index]
 					):
 
-						# Iniciar animacao de destruicao
-						enemy["is_hit"] = True
-						enemy["frame"] = 1
-						enemy["animation_timer"] = 0
+						# Retirar um ponto de vida
+						enemy["health"] -= 1
 
 						# Remover o projetil
 						projectiles.pop(projectile_index)
 
-						# Acrescentar pontos apenas uma vez
-						score = add_score(score, 10)
+						# Se a resistencia chegar a zero, destruir o inimigo
+						if enemy["health"] <= 0:
+
+							enemy["is_hit"] = True
+							enemy["frame"] = 1
+							enemy["animation_timer"] = 0
+
+							# Acrescentar pontos apenas uma vez
+							score = add_score(score, 10)
 
 						collision_detected = True
 						break
@@ -300,7 +305,6 @@ def run_game():
 
 			if not collision_detected:
 				projectile_index += 1
-
 
 		# ----------------------------------
 		# ATUALIZAR ANIMACAO DO JOGADOR

@@ -1,6 +1,12 @@
 
 import pygame
 
+from src.player.player_config import (
+	PLAYER_LIVES,
+	PLAYER_INITIAL_SPEED,
+	PLAYER_INITIAL_SHOT_INTERVAL,
+	PLAYER_INITIAL_WEAPON_LEVEL
+)
 
 # ==================================
 # CONFIGURAÇÕES DA NAVE
@@ -38,8 +44,6 @@ def load_player_sprite():
 	)
 
 	return player_sprite
-
-
 
 # ==================================
 # CRIAR CAMADA DIANTEIRA DOS MOTORES
@@ -87,7 +91,6 @@ def draw_player_front(screen, player, front_layer):
 # ==================================
 # CARREGAR FOTOGRAMAS DAS CHAMAS
 # ==================================
-
 
 def load_flame_sprites():
 
@@ -230,12 +233,47 @@ def create_player(width, height, player_sprite):
 		"y": height - 70 - sprite_height / 2,
 		"width": sprite_width,
 		"height": sprite_height,
-		"speed": PLAYER_SPEED,
+
+		# Caracteristicas iniciais
+		"speed": PLAYER_INITIAL_SPEED,
+		"shot_interval": PLAYER_INITIAL_SHOT_INTERVAL,
+		"weapon_level": PLAYER_INITIAL_WEAPON_LEVEL,
+
+		# Sistema de vidas
+		"lives": PLAYER_LIVES,
+		"is_invulnerable": False,
+		"invulnerability_timer": 0,
+
+		# Animacao das chamas
 		"flame_frame": 0,
 		"flame_timer": 0
 	}
 
 	return player
+
+# ==================================
+# PERDER UMA VIDA
+# ==================================
+
+def lose_player_life(player):
+
+	if player["is_invulnerable"]:
+		return False
+
+	player["lives"] -= 1
+
+	# Repor velocidade inicial
+	player["speed"] = PLAYER_INITIAL_SPEED
+
+	# Repor arma inicial
+	player["shot_interval"] = PLAYER_INITIAL_SHOT_INTERVAL
+	player["weapon_level"] = PLAYER_INITIAL_WEAPON_LEVEL
+
+	# Ativar invulnerabilidade temporaria
+	player["is_invulnerable"] = True
+	player["invulnerability_timer"] = 0
+
+	return True
 
 
 # ==================================
@@ -289,3 +327,40 @@ def draw_player(screen, player, player_sprite):
 	)
 
 	screen.blit(player_sprite, sprite_rect)
+
+# ==================================
+# CONTROLE DE PERDA DE VIDA
+# ==================================
+
+def lose_player_life(player):
+
+	if player["is_invulnerable"]:
+		return False
+
+	player["lives"] -= 1
+
+	# Repor velocidade e arma iniciais
+	player["speed"] = PLAYER_INITIAL_SPEED
+	player["shot_interval"] = PLAYER_INITIAL_SHOT_INTERVAL
+	player["weapon_level"] = PLAYER_INITIAL_WEAPON_LEVEL
+
+	# Ativar invulnerabilidade
+	player["is_invulnerable"] = True
+	player["invulnerability_timer"] = 0
+
+	return True
+
+# ==================================
+# INVULNERABILIDADE APOS PERDER VIDA
+# ==================================
+
+def update_player_invulnerability(player, dt):
+
+	if player["is_invulnerable"]:
+
+		player["invulnerability_timer"] += dt
+
+		if player["invulnerability_timer"] >= 1.5:
+
+			player["is_invulnerable"] = False
+			player["invulnerability_timer"] = 0
