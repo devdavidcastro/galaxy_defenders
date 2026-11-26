@@ -5,11 +5,14 @@ from src.game.game import run_game
 
 def main():
 
-    pygame.init()
+	pygame.init()
 
-    run_game()
+	restart_game = True
 
-    pygame.quit()
+	while restart_game:
+		restart_game = run_game()
+
+	pygame.quit()
 
 
 if __name__ == "__main__":

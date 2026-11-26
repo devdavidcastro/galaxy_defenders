@@ -61,6 +61,7 @@ from src.game.game_over import (
 	draw_game_over_screen,
 	load_game_over_image,
 	create_game_over_image_rect,
+	get_player_ranking_position
 )
 
 from src.game.enemy_manager import (
@@ -333,22 +334,27 @@ def draw_gameplay(
 def run_game():
 	"""Initialize and run the main game loop."""
 
+	restart_game = False
 	game_over = False
 	name_entry_active = False
 	player_name = ""
+	player_ranking_position = None
 
 	high_scores = load_high_scores()
 
 	# Initialize the display.
-	screen = pygame.display.set_mode(
-		(WIDTH, HEIGHT),
-		pygame.RESIZABLE,
-	)
+	screen = pygame.display.get_surface()
 
-	pygame.display.set_caption(WINDOW_TITLE)
+	if screen is None:
+		screen = pygame.display.set_mode(
+			(WIDTH, HEIGHT),
+			pygame.RESIZABLE,
+		)
 
-	window = Window.from_display_module()
-	window.maximize()
+		pygame.display.set_caption(WINDOW_TITLE)
+
+		window = Window.from_display_module()
+		window.maximize()
 
 	game_surface = pygame.Surface((WIDTH, HEIGHT))
 	clock = pygame.time.Clock()
@@ -372,7 +378,7 @@ def run_game():
 	score = create_score()
 	score_font = pygame.font.Font(
 		"assets/fonts/Oxanium.ttf",
-		30,
+		20,
 	)
 
 	# Load enemy assets.
@@ -415,7 +421,13 @@ def run_game():
 			if qualifies_for_high_scores(high_scores, score):
 				name_entry_active = True
 
+				player_ranking_position = get_player_ranking_position(
+				high_scores,
+				score,
+				)
+
 		dt = clock.tick(FPS) / 1000
+
 
 		# Process window events.
 		events = pygame.event.get()
@@ -429,7 +441,18 @@ def run_game():
 
 			elif event.type == pygame.KEYDOWN:
 
-				if name_entry_active:
+				# GAME OVER CONTROLS
+				if game_over and not name_entry_active:
+
+					if event.key == pygame.K_ESCAPE:
+						running = False
+
+					elif event.key == pygame.K_SPACE:
+						running = False
+						restart_game = True
+
+				# PLAYER NAME ENTRY
+				elif name_entry_active:
 
 					if event.key == pygame.K_BACKSPACE:
 						player_name = player_name[:-1]
@@ -450,10 +473,15 @@ def run_game():
 					):
 						player_name += event.unicode
 
+				# START GAME
 				elif event.key == pygame.K_SPACE and not game_started:
 					game_started = True
 
 			event_index += 1
+
+		if restart_game:
+			return True
+
 
 		if not running:
 			break
@@ -567,6 +595,12 @@ def run_game():
 				game_surface,
 				game_over_image,
 				game_over_image_rect,
+				high_scores,
+				score_font,
+				name_entry_active,
+				player_name,
+				score,
+				player_ranking_position,
 			)
 
 		# Update the window display.
