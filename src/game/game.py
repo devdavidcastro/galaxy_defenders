@@ -49,7 +49,10 @@ from src.projectiles.projectile import (
 	draw_enemy_projectile,
 )
 
-from src.enemies.enemy import check_projectile_collision, get_enemy_spawn_interval
+from src.enemies.enemy import (
+	check_projectile_collision,
+	get_enemy_spawn_interval
+)
 
 from src.game.high_scores import (
 	load_high_scores,
@@ -70,6 +73,11 @@ from src.game.enemy_manager import (
 	spawn_enemies,
 	update_enemies,
 	draw_enemies,
+)
+
+from src.game.sounds import (
+	load_sounds,
+	play_sound
 )
 
 
@@ -341,7 +349,7 @@ def run_game():
 	player_ranking_position = None
 
 	high_scores = load_high_scores()
-
+	sounds = load_sounds()
 	# Initialize the display.
 	screen = pygame.display.get_surface()
 
@@ -511,6 +519,8 @@ def run_game():
 				projectiles.append(
 					create_projectile(player)
 				)
+
+				play_sound(sounds, "player_shot")
 
 				shoot_timer = 0
 
