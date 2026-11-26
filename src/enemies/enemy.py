@@ -36,6 +36,8 @@ def create_enemy(screen_width, enemy_type="drone"):
 		"speed_y": config["speed_y"],
 		"direction": random.choice([-1, 1]),
 		"vertical_direction": 1,
+		"zigzag_timer": 0,
+		"zigzag_interval": 1.2,
 		"can_shoot": config["can_shoot"],
 		"shoot_interval": config["shoot_interval"],
 		"shoot_timer": 0,
@@ -48,8 +50,39 @@ def create_enemy(screen_width, enemy_type="drone"):
 
 	return enemy
 
+# ==================================
+# MOVIMENTAR INIMIGOS
+# ==================================
 
 def move_enemy(enemy, dt, screen_width, screen_height):
+
+	if enemy["type"] == "orbital":
+
+		move_orbital(
+			enemy,
+			dt,
+			screen_width,
+			screen_height
+		)
+	elif enemy["type"] == "nave_pesada":
+
+		move_orbital(
+			enemy,
+			dt,
+			screen_width,
+			screen_height
+		)
+
+	else:
+
+		move_basic(
+			enemy,
+			dt,
+			screen_width,
+			screen_height
+		)
+
+def move_basic(enemy, dt, screen_width, screen_height):
 
 	if enemy["is_hit"]:
 		return
@@ -288,3 +321,65 @@ def get_enemy_spawn_interval(score):
 
 	else:
 		return 0.15, 0.4
+
+# ==================================
+# MOVIMENTO DO DRONE
+# ==================================
+
+def move_drone(enemy, dt, screen_width, screen_height):
+
+	move_basic(
+		enemy,
+		dt,
+		screen_width,
+		screen_height
+	)
+
+# ==================================
+# MOVIMENTO DO ORBITAL
+# ==================================
+
+def move_orbital(enemy, dt, screen_width, screen_height):
+
+	if enemy["is_hit"]:
+		return
+
+	# Movimento em ziguezague
+	enemy["zigzag_timer"] += dt
+
+	if enemy["zigzag_timer"] >= enemy["zigzag_interval"]:
+
+		enemy["direction"] *= -1
+		enemy["zigzag_timer"] = 0
+
+	# Movimento horizontal
+	enemy["x"] += (
+		enemy["speed_x"] *
+		enemy["direction"] *
+		dt
+	)
+
+	# Movimento vertical
+	enemy["y"] += (
+		enemy["speed_y"] *
+		enemy["vertical_direction"] *
+		dt
+	)
+
+	# Limites laterais
+	if enemy["x"] + enemy["width"] / 2 >= screen_width - 40:
+		enemy["x"] = screen_width - 40 - enemy["width"] / 2
+		enemy["direction"] = -1
+
+	if enemy["x"] - enemy["width"] / 2 <= 40:
+		enemy["x"] = 40 + enemy["width"] / 2
+		enemy["direction"] = 1
+
+	# Limites verticais
+	if enemy["y"] + enemy["height"] / 2 >= screen_height - 40:
+		enemy["y"] = screen_height - 40 - enemy["height"] / 2
+		enemy["vertical_direction"] = -1
+
+	if enemy["y"] - enemy["height"] / 2 <= 40:
+		enemy["y"] = 40 + enemy["height"] / 2
+		enemy["vertical_direction"] = 1

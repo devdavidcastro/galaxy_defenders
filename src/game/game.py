@@ -43,7 +43,10 @@ from src.player.player import (
 from src.projectiles.projectile import (
 	create_projectile,
 	move_projectile,
-	draw_projectile
+	draw_projectile,
+	create_enemy_projectile,
+	move_enemy_projectile,
+	draw_enemy_projectile
 )
 
 from src.enemies.enemy import (
@@ -98,6 +101,7 @@ def run_game():
 	# ==================================
 
 	projectiles = []
+	enemy_projectiles = []
 
 	shoot_timer = 0
 	SHOOT_INTERVAL = 0.35
@@ -256,7 +260,13 @@ def run_game():
 			enemy = enemies[index]
 			move_enemy(enemy, dt, WIDTH, HEIGHT)
 			update_enemy_animation(enemy, dt)
+			if enemy["can_shoot"] and not enemy["is_hit"]:
+				enemy["shoot_timer"] += dt
 
+				if enemy["shoot_timer"] >= enemy["shoot_interval"]:
+					enemy_projectile = create_enemy_projectile(enemy)
+					enemy_projectiles.append(enemy_projectile)
+					enemy["shoot_timer"] = 0
 			if enemy["is_destroyed"]:
 				enemies.pop(index)
 			else:
@@ -292,6 +302,23 @@ def run_game():
 
 			enemy_index += 1
 
+			enemy_projectile_index = 0
+
+			while enemy_projectile_index < len(enemy_projectiles):
+				enemy_projectile = enemy_projectiles[enemy_projectile_index]
+
+				if check_player_collision(player, enemy_projectile):
+					enemy_projectiles.pop(enemy_projectile_index)
+
+					if not player["is_invulnerable"]:
+						life_lost = lose_player_life(player)
+
+						if player["lives"] <= 0:
+							running = False
+							break
+				else:
+					enemy_projectile_index += 1
+
 		# ----------------------------------
 		# VERIFICAR COLISOES
 		# ----------------------------------
@@ -302,6 +329,18 @@ def run_game():
 
 			enemy_index = 0
 			collision_detected = False
+
+			enemy_projectile_index = 0
+
+			while enemy_projectile_index < len(enemy_projectiles):
+				enemy_projectile = enemy_projectiles[enemy_projectile_index]
+
+				move_enemy_projectile(enemy_projectile, dt)
+
+				if enemy_projectile["y"] - enemy_projectile["height"] / 2 > HEIGHT:
+					enemy_projectiles.pop(enemy_projectile_index)
+				else:
+					enemy_projectile_index += 1
 
 			while enemy_index < len(enemies):
 
@@ -362,7 +401,6 @@ def run_game():
 
 		# Desenhar projetis
 		index = 0
-
 		while index < len(projectiles):
 
 			draw_projectile(
@@ -371,6 +409,15 @@ def run_game():
 			)
 
 			index += 1
+
+		enemy_projectile_index = 0
+
+		while enemy_projectile_index < len(enemy_projectiles):
+			draw_enemy_projectile(
+				game_surface,
+				enemy_projectiles[enemy_projectile_index]
+			)
+			enemy_projectile_index += 1
 
 		# Desenhar chamas
 		draw_player_flames(

@@ -50,3 +50,53 @@ def draw_projectile(screen, projectile):
 		(255, 250, 190),
 		(x - 1, y - height // 2 + 5, 2, height - 10)
 	)
+
+# ==================================
+# CRIAR PROJÉTIL INIMIGO
+# ==================================
+
+def create_enemy_projectile(enemy):
+
+	projectile = {
+		"x": enemy["x"],
+		"y": enemy["y"] + enemy["height"] / 2,
+		"width": PROJECTILE_WIDTH,
+		"height": PROJECTILE_HEIGHT,
+		"speed": 220
+	}
+
+	return projectile
+
+# ==================================
+# MOVIMENTAR PROJÉTIL INIMIGO
+# ==================================
+
+def move_enemy_projectile(projectile, dt):
+
+	projectile["y"] += projectile["speed"] * dt
+
+# ==================================
+# DESENHAR PROJÉTIL INIMIGO
+# ==================================
+
+def draw_enemy_projectile(screen, projectile):
+
+	draw_projectile(screen, projectile)
+
+def create_enemy_projectile(enemy):
+	projectile = {
+		"x": enemy["x"],
+		"y": enemy["y"] + enemy["height"] / 2,
+		"width": PROJECTILE_WIDTH,
+		"height": PROJECTILE_HEIGHT,
+		"speed": 220
+	}
+	return projectile
+
+
+def move_enemy_projectile(projectile, dt):
+	projectile["y"] += projectile["speed"] * dt
+
+
+def draw_enemy_projectile(screen, projectile):
+	draw_projectile(screen, projectile)
