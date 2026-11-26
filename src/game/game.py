@@ -21,7 +21,8 @@ from src.game.stars import (
 from src.game.score import (
 	create_score,
 	add_score,
-	draw_score
+	draw_score,
+	draw_lives
 )
 
 from src.game.display import update_display
@@ -33,7 +34,10 @@ from src.player.player import (
 	load_player_sprite,
 	load_flame_sprites,
 	update_player_animation,
-	draw_player_flames
+	draw_player_flames,
+	check_player_collision,
+	lose_player_life,
+	update_player_invulnerability
 )
 
 from src.projectiles.projectile import (
@@ -258,6 +262,35 @@ def run_game():
 			else:
 				index += 1
 
+		# ----------------------------------
+		# VERIFICAR COLISOES COM O JOGADOR
+		# ----------------------------------
+
+		enemy_index = 0
+		while enemy_index < len(enemies):
+
+			enemy = enemies[enemy_index]
+
+			# Verificar se a nave nao esta protegida
+			if not player["is_invulnerable"]:
+
+				if check_player_collision(player, enemy):
+
+					# Perder uma vida
+					life_lost = lose_player_life(player)
+
+					if life_lost:
+						# Destruir o inimigo que atingiu a nave
+						enemy["is_hit"] = True
+						enemy["frame"] = 1
+						enemy["animation_timer"] = 0
+
+						# Verificar se acabaram as vidas
+						if player["lives"] <= 0:
+							running = False
+							break
+
+			enemy_index += 1
 
 		# ----------------------------------
 		# VERIFICAR COLISOES
@@ -311,6 +344,7 @@ def run_game():
 		# ----------------------------------
 
 		update_player_animation(player, dt)
+		update_player_invulnerability(player, dt)
 
 		# ----------------------------------
 		# ATUALIZAR ESTRELAS
@@ -371,6 +405,13 @@ def run_game():
 			score,
 			score_font
 		)
+
+		# Desenhar vidas
+		draw_lives(
+			game_surface,
+			player,
+			score_font
+)
 
 		# ==================================
 		# APRESENTAR JOGO

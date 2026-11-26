@@ -188,6 +188,12 @@ def update_player_animation(player, dt):
 
 def draw_player_flames(screen, player, flame_frames):
 
+	# Ocultar as chamas durante o efeito de piscar
+	if player["is_invulnerable"]:
+		blink = int(player["invulnerability_timer"] / 0.12)
+		if blink % 2 == 0:
+			return
+
 	frame = flame_frames[player["flame_frame"]]
 
 	engine_offset = 11
@@ -260,6 +266,10 @@ def lose_player_life(player):
 	if player["is_invulnerable"]:
 		return False
 
+	# Verificar se ainda existem vidas
+	if player["lives"] <= 0:
+		return False
+
 	player["lives"] -= 1
 
 	# Repor velocidade inicial
@@ -270,8 +280,9 @@ def lose_player_life(player):
 	player["weapon_level"] = PLAYER_INITIAL_WEAPON_LEVEL
 
 	# Ativar invulnerabilidade temporaria
-	player["is_invulnerable"] = True
-	player["invulnerability_timer"] = 0
+	if player["lives"] > 0:
+		player["is_invulnerable"] = True
+		player["invulnerability_timer"] = 0
 
 	return True
 
@@ -319,6 +330,14 @@ def move_player(player, keys, dt, screen_width, screen_height, margin):
 
 def draw_player(screen, player, player_sprite):
 
+	# Verificar se a nave deve estar visivel
+	if player["is_invulnerable"]:
+
+		blink = int(player["invulnerability_timer"] / 0.10)
+
+		if blink % 2 == 0:
+			return
+
 	sprite_rect = player_sprite.get_rect(
 		center=(
 			int(player["x"]),
@@ -357,10 +376,40 @@ def lose_player_life(player):
 def update_player_invulnerability(player, dt):
 
 	if player["is_invulnerable"]:
-
 		player["invulnerability_timer"] += dt
 
 		if player["invulnerability_timer"] >= 1.5:
-
 			player["is_invulnerable"] = False
 			player["invulnerability_timer"] = 0
+
+# ==================================
+# VERIFICAR COLISAO COM INIMIGOS
+# ==================================
+
+def check_player_collision(player, enemy):
+
+	player_rect = pygame.Rect(
+		0,
+		0,
+		player["width"],
+		player["height"]
+	)
+
+	player_rect.center = (
+		int(player["x"]),
+		int(player["y"])
+	)
+
+	enemy_rect = pygame.Rect(
+		0,
+		0,
+		enemy["width"],
+		enemy["height"]
+	)
+
+	enemy_rect.center = (
+		int(enemy["x"]),
+		int(enemy["y"])
+	)
+
+	return player_rect.colliderect(enemy_rect)

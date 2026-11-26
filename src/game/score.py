@@ -1,4 +1,5 @@
 import pygame
+from src.game.settings import WIDTH
 
 
 SCORE_COLOR = (255, 255, 255)
@@ -32,3 +33,20 @@ def draw_score(screen, score, font):
 	score_rect.topright = (1280 - 30, 20)
 
 	screen.blit(score_text, score_rect)
+
+# ==================================
+# DESENHAR VIDAS
+# ==================================
+
+def draw_lives(screen, player, font):
+
+	lives_text = font.render(
+		f"LIFE: {player['lives']}",
+		True,
+		(255, 255, 255)
+	)
+
+	screen.blit(
+		lives_text,
+		(30, 20)
+	)
