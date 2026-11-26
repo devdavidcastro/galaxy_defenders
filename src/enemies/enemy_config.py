@@ -44,8 +44,8 @@ ENEMY_TYPES = {
 		"height": 48,
 		"speed_x": 180,
 		"speed_y": 140,
-		"can_shoot": False,
-		"shoot_interval": 0,
+		"can_shoot": True,
+		"shoot_interval": 2.5,
 		"health": 1,
 	},
 
@@ -53,10 +53,10 @@ ENEMY_TYPES = {
 		"name": "Criatura",
 		"width": 48,
 		"height": 48,
-		"speed_x": 140,
-		"speed_y": 100,
-		"can_shoot": False,
-		"shoot_interval": 0,
+		"speed_x": 190,
+		"speed_y": 140,
+		"can_shoot": True,
+		"shoot_interval": 2.5,
 		"health": 2,
 	},
 
@@ -68,6 +68,6 @@ ENEMY_TYPES = {
 		"speed_y": 160,
 		"can_shoot": True,
 		"shoot_interval": 1.5,
-		"health": 2,
+		"health": 3,
 	}
 }

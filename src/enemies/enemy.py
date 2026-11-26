@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 
 from src.enemies.enemy_config import ENEMY_TYPES
 
@@ -16,7 +17,7 @@ ENEMY_SPEED_Y = 80
 ENEMY_COLOR = (180, 50, 255)
 
 
-def create_enemy(screen_width, enemy_type="drone"):
+def create_enemy(screen_width, screen_height, enemy_type="drone"):
 
 	config = ENEMY_TYPES[enemy_type]
 
@@ -45,7 +46,14 @@ def create_enemy(screen_width, enemy_type="drone"):
 		"animation_timer": 0,
 		"is_hit": False,
 		"is_destroyed": False,
-		"health": config["health"]
+		"health": config["health"],
+		"burst_shots_remaining": 0,
+		"burst_shot_timer": 0,
+		"burst_shot_interval": 0.25,
+		"target_x": random.randint(100, screen_width - 100),
+		"target_y": random.randint(100, screen_height - 250),
+		"target_timer": 0,
+		"target_interval": 2.0,
 	}
 
 	return enemy
@@ -53,6 +61,33 @@ def create_enemy(screen_width, enemy_type="drone"):
 # ==================================
 # MOVIMENTAR INIMIGOS
 # ==================================
+
+def move_criatura(enemy, dt, screen_width, screen_height):
+
+	if enemy["is_hit"]:
+		return
+
+	enemy["target_timer"] += dt
+
+	# Escolher um novo destino
+	if enemy["target_timer"] >= enemy["target_interval"]:
+
+		enemy["target_x"] = random.randint(80, screen_width - 80)
+		enemy["target_y"] = random.randint(80, screen_height - 200)
+
+		enemy["target_timer"] = 0
+
+	# Calcular a direcao do movimento
+	dx = enemy["target_x"] - enemy["x"]
+	dy = enemy["target_y"] - enemy["y"]
+
+	distance = math.sqrt(dx ** 2 + dy ** 2)
+
+	# Aproximar-se do destino
+	if distance > 5:
+
+		enemy["x"] += (dx / distance) * enemy["speed_x"] * dt
+		enemy["y"] += (dy / distance) * enemy["speed_y"] * dt
 
 def move_enemy(enemy, dt, screen_width, screen_height):
 
@@ -72,6 +107,9 @@ def move_enemy(enemy, dt, screen_width, screen_height):
 			screen_width,
 			screen_height
 		)
+
+	elif enemy["type"] == "criatura" or enemy["type"] == "batedor":
+		move_criatura(enemy, dt, screen_width, screen_height)
 
 	else:
 
@@ -207,17 +245,18 @@ ENEMY_HIT_FRAME_DURATION = 0.07
 
 def update_enemy_animation(enemy, dt):
 
-	if not enemy["is_hit"]:
+	if not enemy["is_hit"] or enemy["is_destroyed"]:
 		return
 
 	enemy["animation_timer"] += dt
 
 	if enemy["animation_timer"] >= ENEMY_HIT_FRAME_DURATION:
 		enemy["animation_timer"] = 0
-		enemy["frame"] += 1
 
-		if enemy["frame"] >= 5:
+		if enemy["frame"] >= 4:
 			enemy["is_destroyed"] = True
+		else:
+			enemy["frame"] += 1
 
 def get_unlocked_enemy_types(score):
 

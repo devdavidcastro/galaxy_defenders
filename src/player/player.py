@@ -351,21 +351,25 @@ def draw_player(screen, player, player_sprite):
 # CONTROLE DE PERDA DE VIDA
 # ==================================
 
-def lose_player_life(player):
-
+def lose_player_life(player, damage=1):
 	if player["is_invulnerable"]:
 		return False
 
-	player["lives"] -= 1
+	if player["lives"] <= 0:
+		return False
 
-	# Repor velocidade e arma iniciais
+	player["lives"] -= damage
+
+	if player["lives"] < 0:
+		player["lives"] = 0
+
 	player["speed"] = PLAYER_INITIAL_SPEED
 	player["shot_interval"] = PLAYER_INITIAL_SHOT_INTERVAL
 	player["weapon_level"] = PLAYER_INITIAL_WEAPON_LEVEL
 
-	# Ativar invulnerabilidade
-	player["is_invulnerable"] = True
-	player["invulnerability_timer"] = 0
+	if player["lives"] > 0:
+		player["is_invulnerable"] = True
+		player["invulnerability_timer"] = 0
 
 	return True
 
