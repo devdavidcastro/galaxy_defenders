@@ -35,7 +35,7 @@ ENEMY_TYPES = {
 		"speed_y": 60,
 		"can_shoot": True,
 		"shoot_interval": 2.5,
-		"health": 3,
+		"health": 2,
 	},
 
 	"orbital": {

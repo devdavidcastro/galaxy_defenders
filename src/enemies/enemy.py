@@ -282,84 +282,88 @@ def get_unlocked_enemy_types(score):
 			"batedor"
 		]
 
+
 def get_enemy_limit(score):
 
 	if score < 100:
-		return 10
+		return 6
 
 	elif score < 200:
-		return 12
+		return 8
 
 	elif score < 300:
-		return 14
+		return 9
 
 	elif score < 400:
-		return 16
+		return 10
 
 	elif score < 500:
-		return 18
+		return 12
 
 	elif score < 600:
-		return 20
+		return 14
 
 	elif score < 700:
-		return 23
+		return 16
 
 	elif score < 800:
-		return 26
+		return 18
 
 	elif score < 900:
-		return 29
+		return 20
 
 	elif score < 1000:
-		return 32
+		return 22
 
 	elif score < 1200:
-		return 35
+		return 24
 
 	elif score < 1500:
-		return 38
+		return 27
 
 	elif score < 1800:
-		return 42
+		return 30
 
 	elif score < 2000:
-		return 46
+		return 33
 
 	else:
-		return 50
+		return 36
+
+
 
 def get_enemy_spawn_interval(score):
 
 	if score < 100:
-		return 0.8, 1.8
+		return 1.2, 2.4
 
 	elif score < 200:
-		return 0.7, 1.5
+		return 1.1, 2.2
 
 	elif score < 300:
-		return 0.6, 1.3
+		return 1.0, 2.0
 
 	elif score < 400:
-		return 0.5, 1.1
+		return 0.9, 1.8
 
 	elif score < 500:
-		return 0.4, 0.9
+		return 0.8, 1.6
 
 	elif score < 600:
-		return 0.35, 0.8
+		return 0.7, 1.4
 
 	elif score < 700:
-		return 0.3, 0.7
+		return 0.6, 1.2
 
 	elif score < 800:
-		return 0.25, 0.6
+		return 0.5, 1.1
 
 	elif score < 900:
-		return 0.2, 0.5
+		return 0.4, 1.0
 
 	else:
-		return 0.15, 0.4
+		return 0.3, 0.8
+
 
 # ==================================
 # MOVIMENTO DO DRONE
