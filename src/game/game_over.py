@@ -128,7 +128,7 @@ def draw_high_scores(
 	index = 0
 
 	while index < HIGH_SCORE_LIMIT:
-		y_position = 285 + index * 20
+		y_position = 285 + index * 25
 
 		is_player_position = (
 			name_entry_active
@@ -137,7 +137,7 @@ def draw_high_scores(
 
 		if is_player_position:
 			position_text = f"{index + 1:02d}."
-			name_text = player_name + "_"
+			name_text = player_name
 			score_text = str(player_score)
 			color = RANKING_ENTRY_COLOR
 
@@ -225,6 +225,8 @@ def draw_game_over_screen(
 		game_over_image_rect,
 	)
 
+	cursor_visible = (pygame.time.get_ticks() // 500) % 2 == 0
+
 	draw_high_scores(
 		game_surface,
 		high_scores,
@@ -259,6 +261,55 @@ def draw_game_over_screen(
 	exit_rect = exit_text.get_rect(
 		center=(WIDTH // 2, 680)
 	)
+
+	if name_entry_active:
+
+		# Draw the blinking cursor after the player's name.
+		if cursor_visible:
+
+			cursor_font = pygame.font.Font(
+				"assets/fonts/Oxanium.ttf",
+				20,
+			)
+
+			cursor_text = cursor_font.render(
+				"_",
+				True,
+				RANKING_ENTRY_COLOR,
+			)
+
+			cursor_rect = cursor_text.get_rect(
+				midleft=(
+					WIDTH // 2 - 125 + font.size(player_name)[0],
+					285 + player_ranking_position * 20 + 15,
+				)
+			)
+
+			game_surface.blit(
+				cursor_text,
+				cursor_rect,
+			)
+
+		# Draw the name entry instruction.
+		instruction_font = pygame.font.Font(
+			"assets/fonts/Oxanium.ttf",
+			14,
+		)
+
+		instruction_text = instruction_font.render(
+			"*Enter your name and press Enter to save",
+			True,
+			RANKING_ENTRY_COLOR,
+		)
+
+		instruction_rect = instruction_text.get_rect(
+			center=(WIDTH // 2, 540)
+		)
+
+		game_surface.blit(
+			instruction_text,
+			instruction_rect,
+		)
 
 	game_surface.blit(restart_text, restart_rect)
 	game_surface.blit(exit_text, exit_rect)

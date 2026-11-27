@@ -223,7 +223,7 @@ def handle_enemy_projectile_collisions(player, enemy_projectiles):
 	return True
 
 
-def handle_player_projectile_collisions(projectiles, enemies, score):
+def handle_player_projectile_collisions(projectiles, enemies, score, sounds):
 	"""Damage enemies and update the player's score."""
 
 	projectile_index = 0
@@ -247,6 +247,7 @@ def handle_player_projectile_collisions(projectiles, enemies, score):
 						enemy["is_hit"] = True
 						enemy["frame"] = 1
 						enemy["animation_timer"] = 0
+						play_sound(sounds, "enemy_destroyed")
 						score = add_score(score, 10)
 
 					collision_detected = True
@@ -569,6 +570,7 @@ def run_game():
 					projectiles,
 					enemies,
 					score,
+					sounds
 				)
 
 			# Update player effects.

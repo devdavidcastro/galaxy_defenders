@@ -1,6 +1,22 @@
 [
     {
         "name": "damuniz",
+        "score": 550
+    },
+    {
+        "name": "damuniz",
+        "score": 350
+    },
+    {
+        "name": "damuniz",
+        "score": 120
+    },
+    {
+        "name": "damuniz",
+        "score": 60
+    },
+    {
+        "name": "damuniz",
         "score": 60
     },
     {
@@ -22,17 +38,5 @@
     {
         "name": "aaa",
         "score": 30
-    },
-    {
-        "name": "aaa",
-        "score": 20
-    },
-    {
-        "name": "aaa",
-        "score": 20
-    },
-    {
-        "name": "aaa",
-        "score": 10
     }
 ]
